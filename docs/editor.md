@@ -9,6 +9,11 @@ round trips. This does not certify protected customer packages or full Microsoft
 feature parity. See [storage](storage.md) and [platforms](platforms.md).
 Windows runtime acceptance is tracked in [Windows validation](windows-validation.md).
 
+Landscape layouts expose Undo and Redo in the document bar. They restore saved
+package history as well as pending edits, respect read-only/host policy and are
+disabled while a file operation is busy. Compact bars place fit/zoom actions in
+a Zoom menu to keep history controls usable without overflowing.
+
 `AresPowerPointEditor(sdk: sdk, documentPath: path)` embeds the domain editor and its
 editing controls. It checks the SDK licence and the document domain before
 loading. Use an absolute native path, or a virtual path returned by browser storage.
@@ -33,3 +38,14 @@ callback does not mean every Microsoft feature is implemented.
 Use the same SDK configuration for scanner, loader, writer and editor. Customer
 examples must not inject a mock verifier or owner mode. See [API declarations](api-reference.md)
 for constructor options and [compatibility limits](compatibility.md).
+
+## PowerPoint picture replacement
+
+Replace picture selects an existing native picture and changes its raster while
+retaining native identity, frame and formatting. The change uses staged saves
+and saved undo/redo, respects read-only/host policies, and accepts native paths
+or byte-only selections. Cancelled or stale-source callbacks do not write files.
+Compress picture uses the same staged/history route and offers 96/150/220/330
+PPI. Applying crop affects the replacement raster; the original media remains
+in the package. Neither command securely erases image content. See
+[native picture APIs and limits](low-level-api.md#managed-native-pictures-and-powerpoint-media).

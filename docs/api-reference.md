@@ -10,11 +10,32 @@ site must be validated against the protected candidate before release.
 ```dart
 AresPowerPointSdk({required super.licenceKey, super.verifyLicence});
 
+Future<AresPresentationLayout> loadLayout(String path);
+
 Future<(AresOfficeSaveResult, int)> insertImage(
     String path, {
     required Uint8List bytes,
     required String fileName,
     required int slideIndex,
+    String? expectedSourceFingerprint,
+  });
+
+Future<AresOfficeSaveResult> replacePicture(
+    String path, {
+    required Uint8List bytes,
+    required String fileName,
+    required int slideIndex,
+    required int objectId,
+    bool clearCrop = false,
+    String? expectedSourceFingerprint,
+  });
+
+Future<AresOfficeSaveResult> compressPicture(
+    String path, {
+    required int slideIndex,
+    required int objectId,
+    required int pixelsPerInch,
+    bool applyCropToRaster = false,
     String? expectedSourceFingerprint,
   });
 
@@ -373,6 +394,8 @@ void clearWordParagraphFormatting(int sectionIndex);
 bool wordParagraphHasListFormatting(int index);
 int addPresentationFreeform(int sectionIndex, AresFreeformPath path, {String text = '', double x = 72, double y = 72, double width = 240, double height = 180});
 void setPresentationFreeform(int sectionIndex, int objectId, AresFreeformPath path);
+void movePresentationFreeformHandle(int sectionIndex, int objectId, int vertexIndex, {required bool incoming, required Offset position, AresFreeformHandleConstraint constraint = AresFreeformHandleConstraint.independent});
+void splitPresentationFreeformSegment(int sectionIndex, int objectId, int segmentIndex, {double t = .5});
 void editPresentationXml(int sectionIndex, String Function(String source) edit, {String? slideLayoutPath});
 void updatePresentationOutline(Map<int, Map<int, String>> textBySlide, {Map<int, Map<int, List<int>>> paragraphLevelsBySlide = const <int, Map<int, List<int>>>{}});
 void changePresentationTextCase(int sectionIndex, String mode);

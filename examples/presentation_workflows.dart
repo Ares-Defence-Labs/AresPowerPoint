@@ -1,3 +1,4 @@
+import 'dart:ui' show Offset;
 import 'package:ares_powerpoint/ares_powerpoint.dart';
 
 // Requires a supported PPTX with at least one slide. File-level operations commit
@@ -21,6 +22,31 @@ Future<AresOfficeDocument> editSlide(AresPowerPointSdk sdk, String path) async {
     session.editPresentationXml(0, (xml) => AresPresentationEditing.addObject(
       xml, text: 'Project update', geometry: 'textBox'));
     session.setSpeakerNotes(0, 'Explain the next steps.');
+    return (await sdk.save(session)).document;
+  } finally {
+    session.dispose();
+  }
+}
+
+// Both handles must already exist on the chosen native vertex.
+Future<AresOfficeDocument> alignFreeformHandle(AresPowerPointSdk sdk,
+    String path, int slideIndex, int objectId, int vertexIndex) async {
+  final session = await sdk.edit(await sdk.load(path));
+  try {
+    session.movePresentationFreeformHandle(slideIndex, objectId, vertexIndex,
+      incoming: false, position: const Offset(.7, .3),
+      constraint: AresFreeformHandleConstraint.aligned);
+    return (await sdk.save(session)).document;
+  } finally { session.dispose(); }
+}
+
+// objectId must identify a supported native freeform on this slide.
+Future<AresOfficeDocument> splitFreeformSegment(AresPowerPointSdk sdk,
+    String path, int slideIndex, int objectId, int segmentIndex) async {
+  final session = await sdk.edit(await sdk.load(path));
+  try {
+    session.splitPresentationFreeformSegment(slideIndex, objectId, segmentIndex,
+      t: .37);
     return (await sdk.save(session)).document;
   } finally {
     session.dispose();

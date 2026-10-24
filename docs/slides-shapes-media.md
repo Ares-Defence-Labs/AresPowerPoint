@@ -4,6 +4,28 @@
 sections are slides; separate native slide-group sections describe deck structure.
 Slide indexes are zero-based and change after lifecycle/reorder operations.
 
+## Parsed presentation models
+
+The package entrypoint exports the parser's typed slide/element hierarchy,
+including shapes, pictures, groups, tables, charts, paragraphs, text runs and
+associated gradient, geometry, line-end, animation and media model types.
+`AresPresentationElement` is sealed; use its exported concrete types to inspect
+results from `AresPresentationParser`. Picture `decorative` preserves the native
+Office flag and suppresses image speech semantics.
+
+`AresPresentationAccessibility` and its report types are also exported. They
+inspect a model or transform a native XML string; they do not authorize file IO.
+Apply a supported transformation through the managed session and save via the SDK:
+
+```dart
+session.editPresentationXml(0, (xml) =>
+  AresPresentationAccessibility.setDecorative(xml, objectId, true));
+await sdk.save(session);
+```
+
+`objectId` is a native ID inspected from the current document, not a list index.
+These source declarations are not a frozen protected-customer release contract.
+
 ## Edit slide objects
 
 Use the session's `editPresentationXml(index, callback)` to apply a supported
@@ -54,6 +76,97 @@ slide sections, timings, charts and freeform paths. Each has native format limit
 preserving imported master/timing/SmartArt/effect parts does not establish edit or
 render parity. Use the [member reference](api-types.md) for exact types and the
 [compatibility guide](compatibility.md) for unfinished features.
+
+## Applying a freeform draft
+
+Creating a freeform and editing an existing path both recheck host edit permission
+and reload through the configured product loader before applying. The editor
+captures the session, document, path, slide and selected object. Reloading or
+changing that context while a picker, dialog or authorization is pending rejects
+the draft; a changed source fingerprint requires reopening. A denied or expired
+licence from the product loader also prevents application. Managed SDK saves
+continue to verify the entitlement and source conflict independently.
+Stale-context rejection is delivered through the host `onError` callback; SDK
+surfaces do not show snackbars. Cancel performs no draft mutation or save.
+Source fixtures validate these guards;
+they do not establish issued customer/admin activation or protected release
+acceptance.
+
+DrawingML stores control points in a path coordinate space mapped to the shape
+frame; see Microsoft's [point coordinates](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.point)
+and [cubic path commands](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.cubicbeziercurveto).
+These schema references are not an executed Microsoft application comparison.
+
+## Coupled curve handles
+
+The dialog's **Independent handles**, **Aligned handles** and **Mirrored handles**
+selector applies to the selected vertex. Aligned movement keeps the opposite
+arm's normalized length and rotates it to the opposite direction. Mirrored
+movement gives both arms equal, opposite vectors. Independent movement leaves
+the other handle unchanged. Choose a coupling mode before dragging a handle,
+editing its coordinates or nudging it with the keyboard. Two existing handles
+are required for coupling; **Curve / corner** can add handles. Picking a mode
+initially aligns the opposite arm to the active handle (outgoing when the vertex
+is selected). A zero direction with a nonzero opposite arm rejects aligned
+movement; mirrored movement may collapse both arms to the vertex.
+
+These are mathematical controls in normalized frame coordinates, not a claim
+that Microsoft point-type commands or physical-length behavior on nonsquare
+frames are fully reproduced. Coupling is dialog draft state; saved DrawingML
+stores the resulting coordinates. Reopening starts in Independent mode without
+changing the saved geometry. Vertex translations retain coupling; deleting a
+point removes its draft mode, while splitting resets the two endpoint modes
+and the inserted point to Independent to preserve exact subdivision geometry.
+Cancel discards the draft. Both handles validate before any replacement.
+
+```dart
+final moved = path.moveHandle(vertexIndex, incoming: false,
+  position: const Offset(.7, .3),
+  constraint: AresFreeformHandleConstraint.mirrored);
+// Pure path operation above; managed native edit below:
+session.movePresentationFreeformHandle(slideIndex, objectId, vertexIndex,
+  incoming: false, position: const Offset(.7, .3),
+  constraint: AresFreeformHandleConstraint.aligned);
+await sdk.save(session);
+```
+
+The pure helper returns an owned immutable vertex list and preserves other
+vertices, path settings and the input. The managed operation is one undoable
+native geometry change through existing domain, entitlement, source-conflict
+and storage checks. Missing handles, unsupported imported geometry and invalid
+coordinates reject without replacing the native shape. Million-unit native
+rounding still applies. This does not finish point editing or freeform parity.
+
+## Freeform point editing
+
+Insert → Freeform creates a native editable single path; Edit points adjusts a
+supported imported/authored path. The dialog supports touch, numeric coordinates
+and keyboard controls. Focus its drawing area: arrows nudge by 0.001 frame units
+(Shift: 0.01), Page Up/Down select vertices, Insert splits a segment, and
+Delete/Backspace removes a point subject to the open/closed minimum. Split
+segment also works without an Insert key. At an open path's final vertex it
+splits the preceding segment. Straight and cubic segment subdivision retains
+the original curve, within numeric/native coordinate precision; half parameter
+is not necessarily half arc length.
+Select Vertex, Incoming handle or Outgoing handle for precise independent handle
+editing. Vertex moves translate both handles; out-of-range translations reject
+atomically. Keyboard events are scoped to the focused canvas, leaving coordinate
+text fields and modified host shortcuts alone. Invalid drafts report an error and remain editable. Cancel discards the draft;
+Apply uses the existing native session/history and authorization path.
+
+Use `AresFreeformPath.splitSegment(segmentIndex, t: .5)` for a pure owned-path
+transformation. The segment index identifies its starting vertex; closed paths
+include the final-to-first edge. Fractions must be finite and strictly between
+zero and one; at most 512 vertices are supported. Use
+`session.splitPresentationFreeformSegment(slideIndex, objectId, segmentIndex,
+t: .5)` for one native undoable shape edit, then `sdk.save(session)`. Unsupported
+imported geometry rejects without flattening. These APIs preserve other segments
+and path settings; managed edit/save retain entitlement and source conflict checks.
+
+Guide/arc/compound paths, Boolean geometry, persistent native point types,
+physical-frame constraints and
+Microsoft reference/all-platform acceptance remain incomplete. These controls
+do not establish full PowerPoint parity or protected-customer delivery acceptance.
 
 ## Images, audio and video
 

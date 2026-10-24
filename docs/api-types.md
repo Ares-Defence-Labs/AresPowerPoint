@@ -6,7 +6,19 @@ This is generated from the current canonical full import, not a hand-written cla
 
 Use [SDK constructors and operations](api-reference.md), [managed lifecycle](low-level-api.md) and [domain recipes](slides-shapes-media.md) alongside this reference.
 
-**121 named exported declarations.** Machine-readable: [API inventory](api-inventory.json).
+**151 named exported declarations.** Machine-readable: [API inventory](api-inventory.json).
+
+## AresDrawingPath
+
+`package:ares_office_core/src/office_vector_icons.dart`
+
+```dart
+class AresDrawingPath
+const AresDrawingPath(this.path, this.width, this.height, this.fill, this.stroke);
+final Path path;
+final double width, height;
+final bool fill, stroke;
+```
 
 ## AresExcelHyperlinkOperationResult
 
@@ -30,6 +42,14 @@ final String address;
 final AresExcelNotesSnapshot snapshot;
 ```
 
+## AresFreeformHandleConstraint
+
+`package:ares_office_core/src/office_presentation_freeform.dart`
+
+```dart
+enum AresFreeformHandleConstraint { independent, aligned, mirrored }
+```
+
 ## AresFreeformPath
 
 `package:ares_office_core/src/office_presentation_freeform.dart`
@@ -40,6 +60,8 @@ const AresFreeformPath(this.vertices, {this.closed = true, this.fill = true, thi
 final List<AresFreeformVertex> vertices;
 final bool closed, fill, stroke;
 void validate();
+AresFreeformPath moveHandle(int vertexIndex, {required bool incoming, required Offset position, AresFreeformHandleConstraint constraint = AresFreeformHandleConstraint.independent});
+AresFreeformPath splitSegment(int segmentIndex, {double t = .5});
 Path toPath(Size size);
 ```
 
@@ -52,6 +74,42 @@ class AresFreeformVertex
 const AresFreeformVertex(this.point, {this.incoming, this.outgoing});
 final Offset point;
 final Offset? incoming, outgoing;
+```
+
+## AresLineEnd
+
+`package:ares_office_core/src/office_line_ends.dart`
+
+```dart
+class AresLineEnd
+const AresLineEnd({this.type = 'none', this.width = 'med', this.length = 'med'});
+final String type, width, length;
+static const dynamic types;
+static const dynamic sizes;
+static AresLineEnd read(XmlElement? line, String tag);
+Path path(double stroke);
+void paint(Canvas canvas, Offset tip, Offset direction, Color color, double stroke);
+```
+
+## AresLinearGradientFill
+
+`package:ares_office_core/src/office_gradient_fill.dart`
+
+```dart
+class AresLinearGradientFill extends Gradient
+const AresLinearGradientFill({required super.colors, required super.stops, this.angle = 0, this.scaled = true, this.rotateWithShape = true, this.path, this.fillToRect = const Rect.fromLTRB(.5, .5, .5, .5), this.tileRect, this.nativeColorXml});
+final double angle;
+final bool scaled, rotateWithShape;
+final String? path;
+final Rect fillToRect;
+final Rect? tileRect;
+final List<String?>? nativeColorXml;
+(Offset, Offset) endpoints(Rect rect);
+ui.Shader createShader(Rect rect, {TextDirection? textDirection});
+AresLinearGradientFill scale(double factor);
+AresLinearGradientFill withOpacity(double opacity);
+AresLinearGradientFill fromColor(Color color);
+AresLinearGradientFill forRotation(double rotation);
 ```
 
 ## AresOfficeAnnotation
@@ -179,7 +237,7 @@ AresOfficeDocument copyWith({String? path, AresOfficeDocumentType? type, List<Ar
 `package:ares_office_core/src/office_document.dart`
 
 ```dart
-class AresOfficeDocumentException
+class AresOfficeDocumentException implements Exception
 const AresOfficeDocumentException(this.message, {this.cause});
 final String message;
 final Object? cause;
@@ -418,7 +476,7 @@ static Future<bool> verify(AresOfficeProduct product, String licenceKey);
 `package:ares_office_core/src/sdk/ares_domain_sdk.dart`
 
 ```dart
-class AresOfficeLicenceException
+class AresOfficeLicenceException implements Exception
 const AresOfficeLicenceException(this.product);
 final AresOfficeProduct product;
 String toString();
@@ -614,7 +672,7 @@ enum AresOfficePlatform { android, ios, macos, windows, linux, web }
 `package:ares_office_core/src/sdk/ares_office_platforms.dart`
 
 ```dart
-class AresOfficePlatforms
+abstract final class AresOfficePlatforms
 static const Set<AresOfficePlatform> editorTargets;
 static const Set<AresOfficePlatform> documentApiTargets;
 static const Set<AresOfficePlatform> scannerTargets;
@@ -856,7 +914,7 @@ Future<String> extractText(AresOfficeDocument document, {required String outputP
 `package:ares_office_core/src/storage/ares_office_storage.dart`
 
 ```dart
-class AresOfficeStorage
+abstract final class AresOfficeStorage
 static Future<String> importBytes({required String name, required List<int> bytes, String? path, bool overwrite = false});
 static Future<String> open(String path);
 static Future<Uint8List> readBytes(String path);
@@ -878,7 +936,7 @@ const AresOfficeStorageConflict();
 `package:ares_office_core/src/storage/office_storage_error.dart`
 
 ```dart
-class AresOfficeStorageException
+class AresOfficeStorageException implements Exception
 const AresOfficeStorageException(this.message);
 final String message;
 String toString();
@@ -1157,7 +1215,10 @@ Widget build(BuildContext context);
 ```dart
 class AresPowerPointSdk extends AresDomainSdk
 AresPowerPointSdk({required super.licenceKey, super.verifyLicence});
+Future<AresPresentationLayout> loadLayout(String path);
 Future<(AresOfficeSaveResult, int)> insertImage(String path, {required Uint8List bytes, required String fileName, required int slideIndex, String? expectedSourceFingerprint});
+Future<AresOfficeSaveResult> replacePicture(String path, {required Uint8List bytes, required String fileName, required int slideIndex, required int objectId, bool clearCrop = false, String? expectedSourceFingerprint});
+Future<AresOfficeSaveResult> compressPicture(String path, {required int slideIndex, required int objectId, required int pixelsPerInch, bool applyCropToRaster = false, String? expectedSourceFingerprint});
 Future<(AresOfficeSaveResult, int, String)> insertAudioObject(String path, {required Uint8List bytes, required String fileName, required int slideIndex, required Uint8List iconBytes, String? expectedSourceFingerprint});
 Future<(AresOfficeSaveResult, int, String)> insertVideoObject(String path, {required Uint8List bytes, required String fileName, required int slideIndex, required Uint8List posterBytes, String? expectedSourceFingerprint});
 Future<AresPresentationCommentsSnapshot> inspectComments(String path);
@@ -1211,6 +1272,83 @@ State<AresPowerPointSlideshow> createState();
 
 ```dart
 enum AresPowerPointTransformation { faithful, polished, summarised }
+```
+
+## AresPresentationAccessibility
+
+`package:ares_office_core/src/office_presentation_accessibility.dart`
+
+```dart
+class AresPresentationAccessibility
+static Iterable<XmlElement> elements(XmlNode n, String name);
+static List<AresPresentationDescription> inspect(AresOfficeDocument document);
+static List<AresPresentationSlideTitle> inspectTitles(AresOfficeDocument document);
+static List<AresPresentationHyperlinkIssue> inspectHyperlinks(AresOfficeDocument document);
+static String setHyperlinkText(String source, int index, String text);
+static String setSlideTitle(String source, String title);
+static bool isDecorative(XmlElement properties);
+static String setDecorative(String source, int id, bool decorative);
+static String setDescription(String source, int id, String description);
+```
+
+## AresPresentationAutofit
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+enum AresPresentationAutofit { none, shrinkText, resizeShape }
+```
+
+## AresPresentationBevel
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationBevel
+const AresPresentationBevel({required this.preset, required this.width, required this.height});
+final String preset;
+final double width, height;
+```
+
+## AresPresentationChart
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationChart extends AresPresentationElement
+final String title;
+const AresPresentationChart({this.title = '', this.gapWidth = 150, this.overlap = 0, this.percentStacked = false, this.horizontal = false, this.stacked = false, this.firstSliceAngle = 0, this.holeFraction = .5, this.varyColors = true, this.showPercent = false, super.id, super.alternativeText, required super.x, required super.y, required super.width, required super.height, required super.rotation, required this.type, required this.categories, required this.series, required this.background, required this.hasLegend, required this.showValues});
+final double firstSliceAngle, holeFraction;
+final bool varyColors, showPercent;
+final bool horizontal, stacked, percentStacked;
+final double gapWidth, overlap;
+final AresPresentationChartType type;
+final List<String> categories;
+final List<AresPresentationChartSeries> series;
+final Color background;
+final bool hasLegend;
+final bool showValues;
+```
+
+## AresPresentationChartSeries
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationChartSeries
+const AresPresentationChartSeries({this.pointColors = const {}, required this.name, required this.values, required this.color});
+final Map<int, Color> pointColors;
+final String name;
+final List<double> values;
+final Color color;
+```
+
+## AresPresentationChartType
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+enum AresPresentationChartType { bar, line, pie, doughnut }
 ```
 
 ## AresPresentationComment
@@ -1291,6 +1429,19 @@ final String name;
 final List<int> slides;
 ```
 
+## AresPresentationDescription
+
+`package:ares_office_core/src/office_presentation_accessibility.dart`
+
+```dart
+class AresPresentationDescription
+const AresPresentationDescription({required this.slide, required this.id, required this.name, required this.kind, required this.description, required this.decorative, required this.needsDescription});
+final int slide, id;
+final String name, kind, description;
+final bool decorative;
+final bool needsDescription;
+```
+
 ## AresPresentationEditing
 
 `package:ares_office_core/src/office_presentation_editing.dart`
@@ -1344,6 +1495,22 @@ static String copyTransition(String destination, String source);
 static String transition(String source, String effect);
 ```
 
+## AresPresentationElement
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+sealed class AresPresentationElement
+final String alternativeText;
+const AresPresentationElement({this.alternativeText = '', this.id = -1, required this.x, required this.y, required this.width, required this.height, required this.rotation});
+final int id;
+final double x;
+final double y;
+final double width;
+final double height;
+final double rotation;
+```
+
 ## AresPresentationFreeform
 
 `package:ares_office_core/src/office_presentation_freeform.dart`
@@ -1354,6 +1521,68 @@ static XmlElement geometry(AresFreeformPath path);
 static String set(String source, int objectId, AresFreeformPath path);
 static String add(String source, AresFreeformPath path, {String text = '', double x = 72, double y = 72, double width = 240, double height = 180});
 static AresFreeformPath? read(String source, int objectId);
+```
+
+## AresPresentationGlow
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationGlow
+const AresPresentationGlow({required this.color, required this.opacity, required this.radius});
+final Color color;
+final double opacity, radius;
+```
+
+## AresPresentationGroup
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationGroup extends AresPresentationElement
+const AresPresentationGroup({super.id, super.alternativeText, required super.x, required super.y, required super.width, required super.height, required super.rotation, required this.childX, required this.childY, required this.childWidth, required this.childHeight, required this.elements, this.flipHorizontal = false, this.flipVertical = false});
+final double childX, childY, childWidth, childHeight;
+final bool flipHorizontal, flipVertical;
+final List<AresPresentationElement> elements;
+```
+
+## AresPresentationHyperlinkIssue
+
+`package:ares_office_core/src/office_presentation_accessibility.dart`
+
+```dart
+class AresPresentationHyperlinkIssue
+const AresPresentationHyperlinkIssue({required this.slide, required this.index, required this.objectId, required this.text, required this.reason});
+final int slide;
+final int index;
+final int objectId;
+final String text;
+final String reason;
+```
+
+## AresPresentationImage
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationImage extends AresPresentationElement
+const AresPresentationImage({this.lineDash = const [], this.lineCap = StrokeCap.butt, this.lineColor, this.lineWidth = 0, this.crop = const Rect.fromLTRB(0, 0, 1, 1), this.brightness = 0, this.contrast = 0, this.transparency = 0, this.grayscale = false, this.decorative = false, this.shadow, this.glow, this.audio, this.video, this.playback = const AresPresentationMediaPlayback(), super.id, super.alternativeText, this.flipHorizontal = false, this.flipVertical = false, required super.x, required super.y, required super.width, required super.height, required super.rotation, required this.geometry, required this.bytes});
+final Color? lineColor;
+final double lineWidth;
+final List<double> lineDash;
+final StrokeCap lineCap;
+final Rect crop;
+final int brightness, contrast, transparency;
+final bool grayscale;
+final bool decorative;
+final AresPresentationOuterShadow? shadow;
+final AresPresentationGlow? glow;
+final AresPresentationSound? audio;
+final AresPresentationSound? video;
+final AresPresentationMediaPlayback playback;
+final bool flipHorizontal, flipVertical;
+final String geometry;
+final Uint8List bytes;
 ```
 
 ## AresPresentationLayout
@@ -1368,6 +1597,66 @@ final double height;
 final List<AresPresentationSlide> slides;
 ```
 
+## AresPresentationMediaBookmark
+
+`package:ares_office_core/src/office_presentation_media_playback.dart`
+
+```dart
+class AresPresentationMediaBookmark
+const AresPresentationMediaBookmark({required this.name, required this.timeMilliseconds});
+final String name;
+final int timeMilliseconds;
+AresPresentationMediaBookmark copyWith({String? name, int? timeMilliseconds});
+```
+
+## AresPresentationMediaPlayback
+
+`package:ares_office_core/src/office_presentation_media_playback.dart`
+
+```dart
+class AresPresentationMediaPlayback
+const AresPresentationMediaPlayback({this.start = 'whenClicked', this.loop = false, this.rewind = true, this.showWhenStopped = true, this.fullScreen = false, this.volume = 100, this.slides = 1, this.timelineIndex = -1, this.trimStartMilliseconds = 0, this.trimEndMilliseconds = 0, this.fadeInMilliseconds = 0, this.fadeOutMilliseconds = 0, this.bookmarks = const <AresPresentationMediaBookmark>[]});
+final String start;
+final bool loop, rewind, showWhenStopped, fullScreen;
+final int volume, slides, timelineIndex, trimStartMilliseconds, trimEndMilliseconds, fadeInMilliseconds, fadeOutMilliseconds;
+final List<AresPresentationMediaBookmark> bookmarks;
+static const String media2010Namespace;
+static const Set<String> starts;
+AresPresentationMediaPlayback copyWith({String? start, bool? loop, bool? rewind, bool? showWhenStopped, bool? fullScreen, int? volume, int? slides, int? timelineIndex, int? trimStartMilliseconds, int? trimEndMilliseconds, int? fadeInMilliseconds, int? fadeOutMilliseconds, List<AresPresentationMediaBookmark>? bookmarks});
+static AresPresentationMediaPlayback read(XmlNode source, int objectId);
+static String apply(String source, int objectId, AresPresentationMediaPlayback value);
+```
+
+## AresPresentationOuterShadow
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationOuterShadow
+const AresPresentationOuterShadow({required this.color, required this.opacity, required this.blurRadius, required this.distance, required this.angle});
+final Color color;
+final double opacity, blurRadius, distance, angle;
+```
+
+## AresPresentationParagraph
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationParagraph
+const AresPresentationParagraph({required this.runs, required this.alignment, this.bulletText, this.textDirection = TextDirection.ltr, this.spaceBeforePoints = 0, this.spaceAfterPoints = 0, this.lineSpacing = 1.05, this.leftIndentPoints = 0, this.rightIndentPoints = 0, this.firstLineIndentPoints = 0});
+final List<AresPresentationTextRun> runs;
+final TextAlign alignment;
+final String? bulletText;
+final TextDirection textDirection;
+final double spaceBeforePoints;
+final double spaceAfterPoints;
+final double lineSpacing;
+final double leftIndentPoints;
+final double rightIndentPoints;
+final double firstLineIndentPoints;
+```
+
 ## AresPresentationParser
 
 `package:ares_office_core/src/presentation_file_preview.dart`
@@ -1376,6 +1665,7 @@ final List<AresPresentationSlide> slides;
 class AresPresentationParser
 const AresPresentationParser();
 Future<AresPresentationLayout> parse(File file, {List<AresOfficeDocumentSection>? editedSections, List<AresSlideChartChange> chartChanges = const [], List<AresPresentationThemeChange> themeChanges = const [], List<AresPresentationPartChange> partChanges = const [], int? slideWidthEmu, int? slideHeightEmu, int? maximumSlides});
+Future<AresPresentationLayout> parseBytes(Uint8List bytes, {List<AresOfficeDocumentSection>? editedSections, List<AresSlideChartChange> chartChanges = const [], List<AresPresentationThemeChange> themeChanges = const [], List<AresPresentationPartChange> partChanges = const [], int? slideWidthEmu, int? slideHeightEmu, int? maximumSlides});
 ```
 
 ## AresPresentationPartChange
@@ -1386,6 +1676,81 @@ Future<AresPresentationLayout> parse(File file, {List<AresOfficeDocumentSection>
 class AresPresentationPartChange
 const AresPresentationPartChange({required this.id, required this.path, required this.sourceXml});
 final String id, path, sourceXml;
+```
+
+## AresPresentationPictureFill
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationPictureFill
+const AresPresentationPictureFill({required this.bytes, this.tile = false, this.crop = const Rect.fromLTRB(0, 0, 1, 1), this.offsetX = 0, this.offsetY = 0, this.scaleX = 1, this.scaleY = 1, this.alignment = 'tl', this.flip = 'none', this.rotateWithShape = true});
+final Uint8List bytes;
+final bool tile, rotateWithShape;
+final Rect crop;
+final double offsetX, offsetY, scaleX, scaleY;
+final String alignment, flip;
+```
+
+## AresPresentationReflection
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationReflection
+const AresPresentationReflection({required this.startOpacity, required this.endOpacity, required this.visibleFraction, required this.blurRadius, required this.distance, this.startPosition = 0, this.direction = 90, this.fadeDirection = 90, this.scaleX = 1, this.scaleY = -1, this.skewX = 0, this.skewY = 0, this.alignment = 'bl', this.rotateWithShape = false});
+final double startOpacity, endOpacity, visibleFraction;
+final double blurRadius, distance;
+final double startPosition, direction, fadeDirection;
+final double scaleX, scaleY, skewX, skewY;
+final String alignment;
+final bool rotateWithShape;
+```
+
+## AresPresentationShape
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationShape extends AresPresentationElement
+const AresPresentationShape({this.action, this.hoverAction, this.customPaths = const [], this.geometryAdjustments = const <double>[], this.fillGradient, this.fillPattern, this.fillPatternBackground, this.pictureFill, this.shadow, this.innerShadow, this.glow, this.reflection, this.softEdgeRadius = 0, this.topBevel, this.bottomBevel, this.threeDFormat, this.lineDash = const [], this.lineCap = StrokeCap.butt, this.startArrow = const AresLineEnd(), this.endArrow = const AresLineEnd(), this.flipHorizontal = false, this.flipVertical = false, this.tableBorders, super.id, super.alternativeText, required super.x, required super.y, required super.width, required super.height, required super.rotation, required this.geometry, required this.fill, required this.lineColor, required this.lineWidth, required this.paragraphs, this.textOrientation = 'horz', this.textTransform = 'textNoShape', this.autofit = AresPresentationAutofit.none, this.autofitFontScale = 1, this.autofitLineSpacingReduction = 0, this.wrapText = true, this.horizontalOverflow = 'overflow', this.verticalOverflow = 'overflow', required this.verticalAlignment, required this.insetLeft, required this.insetRight, required this.insetTop, required this.insetBottom});
+final List<AresDrawingPath> customPaths;
+final String? action, hoverAction;
+final List<double> geometryAdjustments;
+final AresLinearGradientFill? fillGradient;
+final String? fillPattern;
+final Color? fillPatternBackground;
+final AresPresentationPictureFill? pictureFill;
+final AresPresentationOuterShadow? shadow;
+final AresPresentationOuterShadow? innerShadow;
+final AresPresentationGlow? glow;
+final AresPresentationReflection? reflection;
+final double softEdgeRadius;
+final AresPresentationBevel? topBevel, bottomBevel;
+final AresPresentationThreeDFormat? threeDFormat;
+final List<double> lineDash;
+final StrokeCap lineCap;
+final AresLineEnd startArrow, endArrow;
+final Border? tableBorders;
+final bool flipHorizontal, flipVertical;
+final String geometry;
+final Color? fill;
+final Color? lineColor;
+final double lineWidth;
+final List<AresPresentationParagraph> paragraphs;
+final String textOrientation;
+final String textTransform;
+final AresPresentationAutofit autofit;
+final double autofitFontScale;
+final double autofitLineSpacingReduction;
+final bool wrapText;
+final String horizontalOverflow;
+final String verticalOverflow;
+final Alignment verticalAlignment;
+final double insetLeft;
+final double insetRight;
+final double insetTop;
+final double insetBottom;
 ```
 
 ## AresPresentationShowSettings
@@ -1413,6 +1778,32 @@ int get hashCode;
 enum AresPresentationShowType { speaker, individual, kiosk }
 ```
 
+## AresPresentationSlide
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationSlide
+final List<AresSlideAnimation> animations;
+const AresPresentationSlide({this.hidden = false, this.backgroundGradient, this.backgroundPicture, this.backgroundPattern, this.backgroundPatternForeground, this.backgroundPatternBackground, this.animations = const [], this.sounds = const <String, AresPresentationSound>{}, required this.path, required this.background, required this.elements, this.notes = '', this.transition = 'none', this.transitionSoundRelationshipId, this.transitionSoundLoop = false, this.transitionStopsSound = false, this.advanceMilliseconds, this.transitionMilliseconds = 500, this.transitionDirection = 'l'});
+final bool hidden;
+final Map<String, AresPresentationSound> sounds;
+final AresLinearGradientFill? backgroundGradient;
+final AresPresentationPictureFill? backgroundPicture;
+final String? backgroundPattern;
+final Color? backgroundPatternForeground, backgroundPatternBackground;
+final String path;
+final Color background;
+final List<AresPresentationElement> elements;
+final String notes;
+final String transition;
+final String? transitionSoundRelationshipId;
+final bool transitionSoundLoop, transitionStopsSound;
+final int? advanceMilliseconds;
+final int transitionMilliseconds;
+final String transitionDirection;
+```
+
 ## AresPresentationSlideSection
 
 `package:ares_office_core/src/office_document.dart`
@@ -1422,6 +1813,20 @@ class AresPresentationSlideSection
 const AresPresentationSlideSection({required this.id, required this.name, required this.slides});
 final String id, name;
 final List<int> slides;
+```
+
+## AresPresentationSlideTitle
+
+`package:ares_office_core/src/office_presentation_accessibility.dart`
+
+```dart
+class AresPresentationSlideTitle
+const AresPresentationSlideTitle({required this.slide, required this.title, required this.missing, required this.duplicate});
+final int slide;
+final String title;
+final bool missing;
+final bool duplicate;
+bool get hasIssue;
 ```
 
 ## AresPresentationSnapshot
@@ -1435,6 +1840,59 @@ final AresPresentationLayout layout;
 Widget build(BuildContext context);
 ```
 
+## AresPresentationSound
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationSound
+const AresPresentationSound({required this.name, required this.extension, required this.bytes});
+final String name, extension;
+final Uint8List bytes;
+```
+
+## AresPresentationTable
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationTable extends AresPresentationElement
+const AresPresentationTable({super.id, super.alternativeText, required super.x, required super.y, required super.width, required super.height, required super.rotation, required this.cells});
+final List<AresPresentationShape> cells;
+```
+
+## AresPresentationTextRun
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationTextRun
+const AresPresentationTextRun({required this.text, this.fontSize = 18, this.fontFamily = 'Aptos', this.color = const Color(0xff17212b), this.fillGradient, this.fillPattern, this.fillPatternBackground, this.bold = false, this.italic = false, this.underline = false, this.strikethrough = false, this.textPosition = AresOfficeTextPosition.normal, this.highlightColor, this.capitalization = 'none', this.characterSpacing = 0, this.outlineColor, this.outlineWidth = 0, this.outlineDash = const <double>[], this.outlineCap = StrokeCap.butt, this.outlineJoin = 'round', this.glow, this.shadow, this.reflection});
+final String text;
+final double fontSize;
+final String fontFamily;
+final Color color;
+final AresLinearGradientFill? fillGradient;
+final String? fillPattern;
+final Color? fillPatternBackground;
+final bool bold;
+final bool italic;
+final bool underline;
+final bool strikethrough;
+final AresOfficeTextPosition textPosition;
+final Color? highlightColor;
+final String capitalization;
+final double characterSpacing;
+final Color? outlineColor;
+final double outlineWidth;
+final List<double> outlineDash;
+final StrokeCap outlineCap;
+final String outlineJoin;
+final AresPresentationGlow? glow;
+final AresPresentationOuterShadow? shadow;
+final AresPresentationReflection? reflection;
+```
+
 ## AresPresentationThemeChange
 
 `package:ares_office_core/src/office_document.dart`
@@ -1445,6 +1903,20 @@ AresPresentationThemeChange({required this.id, required this.name, required Map<
 final String id, name;
 final Map<String, String> colors;
 final String? headingFont, bodyFont;
+```
+
+## AresPresentationThreeDFormat
+
+`package:ares_office_core/src/presentation_file_preview.dart`
+
+```dart
+class AresPresentationThreeDFormat
+const AresPresentationThreeDFormat({required this.depth, required this.depthColor, required this.contourWidth, required this.contourColor, required this.material, required this.cameraPreset, required this.rotationX, required this.rotationY, required this.rotationZ, required this.perspective, required this.lightRig, required this.lightDirection});
+final double depth, contourWidth;
+final Color? depthColor, contourColor;
+final String material;
+final String cameraPreset, lightRig, lightDirection;
+final double rotationX, rotationY, rotationZ, perspective;
 ```
 
 ## AresScanRegion
@@ -1471,6 +1943,25 @@ factory AresScanRegion.fromJson(Map<String, dynamic> json);
 
 ```dart
 enum AresScanRegionKind { heading, text, image, table, chart, shape, connector }
+```
+
+## AresSlideAnimation
+
+`package:ares_office_core/src/office_presentation_animations.dart`
+
+```dart
+class AresSlideAnimation
+const AresSlideAnimation({required this.id, required this.objectId, required this.effect, this.exit = false, this.direction = 'left', this.duration = 500, this.delay = 0, this.repeatCount = 1, this.autoReverse = false, this.rewind = false, this.motionPath = 'M 0 0 L 0.25 0 E', this.motionPathEditMode = 'relative', this.motionOrigin = 'layout', this.motionPointTypes = '', this.textSequence = 'all', this.textDelayPercent = 10, this.textSequenceReverse = false, this.scalePercent = 150, this.colorRgb = 0xff0000, this.transparencyPercent = 50, this.fontFamily = 'Arial', this.triggerObjectId, this.triggerMediaObjectId, this.triggerBookmarkName, this.start = 'click', this.soundRelationshipId, this.soundName = '', this.soundVolume = 100, this.stopPreviousSound = false, this.timelineIndex = -1});
+final int id, objectId, duration, delay, repeatCount, textDelayPercent, scalePercent, colorRgb, transparencyPercent;
+final int timelineIndex;
+final int? triggerObjectId;
+final int? triggerMediaObjectId;
+final String effect, direction, motionPath, motionPathEditMode, motionOrigin, motionPointTypes, textSequence, start, fontFamily, soundName;
+final String? triggerBookmarkName;
+final String? soundRelationshipId;
+final int soundVolume;
+final bool exit, autoReverse, rewind, textSequenceReverse, stopPreviousSound;
+String get label;
 ```
 
 ## AresSlideChartChange
